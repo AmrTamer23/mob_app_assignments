@@ -1,157 +1,82 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 
 class Home extends StatefulWidget {
   const Home({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  int randomNumber1 = Random().nextInt(10);
-  int randomNumber2 = Random().nextInt(10);
-  int rightGuess = Random().nextInt(2);
-  Color containerColor1 = const Color.fromARGB(255, 255, 194, 120);
-  Color containerColor2 = const Color.fromARGB(255, 255, 194, 120);
+  TextEditingController weightController = TextEditingController();
+  TextEditingController heightController = TextEditingController();
+  double bmiResult = 0.0;
 
-  @override
-  void initState() {
-    super.initState();
-    reGenerateRandomNumbers();
-  }
-
-  void reGenerateRandomNumbers() {
-    setState(() {
-      randomNumber1 = Random().nextInt(10);
-      randomNumber2 = Random().nextInt(10);
-      rightGuess = Random().nextInt(2);
-    });
-    if (randomNumber1 == randomNumber2) reGenerateRandomNumbers();
-  }
-
-  void resetContainerColors() {
-    setState(() {
-      containerColor1 = const Color.fromARGB(255, 255, 194, 120);
-      containerColor2 = const Color.fromARGB(255, 255, 194, 120);
-    });
-  }
-
-  void actionAfterChoice(int choice) {
-    if (rightGuess == choice) {
+  void calculateBMI() {
+    double weight = double.tryParse(weightController.text) ?? 0.0;
+    double height = double.tryParse(heightController.text) ?? 0.0;
+    if (weight > 0 && height > 0) {
+      double bmi = weight / ((height / 100) * (height / 100));
       setState(() {
-        containerColor1 = choice == 0 ? Colors.green : containerColor1;
-        containerColor2 = choice == 1 ? Colors.green : containerColor2;
+        bmiResult = bmi;
       });
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text(
-              'Congratulations!',
-              style: TextStyle(color: Colors.white),
-            ),
-            content: const Text(
-              'You guessed the right number!',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.green[700],
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  resetContainerColors();
-                },
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      setState(() {
-        containerColor1 = choice == 0 ? Colors.red : containerColor1;
-        containerColor2 = choice == 1 ? Colors.red : containerColor2;
-      });
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text(
-              'Oops!',
-              style: TextStyle(color: Colors.white),
-            ),
-            content: const Text(
-              'You guessed the wrong number!',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.red[300],
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  resetContainerColors();
-                },
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
-              ),
-            ],
-          );
-        },
-      );
     }
-    reGenerateRandomNumbers();
   }
+
+  static const Color primaryColor = Color.fromARGB(255, 255, 194, 120);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0x000f0f0f),
-      extendBodyBehindAppBar: false,
       appBar: AppBar(
-        title: const Text('Guess The Number',
-            style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'BMI Calculator',
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         backgroundColor: const Color(0x000f0f0f),
       ),
+      backgroundColor: const Color(0x000f0f0f),
       body: Padding(
-        padding: const EdgeInsets.symmetric(),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            GestureDetector(
-              onTap: () => actionAfterChoice(0),
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.5 -
-                    AppBar().preferredSize.height,
-                width: MediaQuery.of(context).size.width,
-                color: containerColor1,
-                alignment: Alignment.center,
-                child: Text(
-                  '$randomNumber1',
-                  style: const TextStyle(
-                      fontSize: 45.0, fontWeight: FontWeight.bold),
-                ),
-              ),
+            TextField(
+              controller: weightController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                  labelText: 'Enter Weight (kg)',
+                  labelStyle: TextStyle(color: Colors.white)),
+              cursorColor: primaryColor,
             ),
-            Container(
-              height: 4.0,
-              width: MediaQuery.of(context).size.width,
-              color: Colors.transparent,
-            ),
-            GestureDetector(
-              onTap: () => actionAfterChoice(1),
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.5 -
-                    AppBar().preferredSize.height,
-                width: MediaQuery.of(context).size.width,
-                color: containerColor2,
-                alignment: Alignment.center,
-                child: Text(
-                  '$randomNumber2',
-                  style: const TextStyle(
-                      fontSize: 45.0, fontWeight: FontWeight.bold),
-                ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: heightController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Enter Height (cm)',
+                labelStyle: TextStyle(color: Colors.white),
               ),
+              cursorColor: primaryColor,
+            ),
+            const SizedBox(height: 24.0),
+            ElevatedButton(
+              onPressed: () => calculateBMI(),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(
+                      const Color.fromARGB(255, 255, 194, 120))),
+              child: const Text('Calculate BMI',
+                  style: TextStyle(fontSize: 16.0, color: Colors.black)),
+            ),
+            const SizedBox(height: 24.0),
+            Text(
+              'BMI: ${bmiResult.toStringAsFixed(2)}',
+              style:
+                  const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
